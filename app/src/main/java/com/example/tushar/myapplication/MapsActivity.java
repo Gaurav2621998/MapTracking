@@ -45,9 +45,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationRequest mLocationRequest;
     LatLng sydney[] = new LatLng[10];
     public int i = 0;
-    int a;
+    int x = 0;
+    int a=0;
     String key;
-    DatabaseReference mref, ref,dref;
+    DatabaseReference mref, ref, dref;
 
 
     private long UPDATE_INTERVAL = 1000;  /* 10 secs */
@@ -57,23 +58,93 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mref = FirebaseDatabase.getInstance().getReference().child("root").child("location");
-        dref=mref;
+        dref = mref;
         ref = mref.push();
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(final DataSnapshot dataSnapshot) {
+                Toast.makeText(MapsActivity.this, Integer.toString(x), Toast.LENGTH_SHORT).show();
+                if (x > 0) {
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mMap.clear();
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                if(!(snapshot.getKey().toString().equals(key))) {
+                                    String s = snapshot.child("Lat").getValue().toString();
+                                    String s1 = snapshot.child("Long").getValue().toString();
+                                    String s2 = snapshot.child("Place").getValue().toString();
+
+                                    LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
+
+                                    // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
+                                    mMap.addMarker(new MarkerOptions()
+                                            .position(lng)
+                                            .title(s2)
+                                            .snippet("and snippet")
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ccccc)));
+
+
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
+                                }
+                                else
+                                {
+                                    String s = snapshot.child("Lat").getValue().toString();
+                                    String s1 = snapshot.child("Long").getValue().toString();
+                                    String s2 = snapshot.child("Place").getValue().toString();
+
+                                    LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
+
+                                    // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
+                                    mMap.addMarker(new MarkerOptions()
+                                            .position(lng)
+                                            .title(s2)
+                                            .snippet("and snippet")
+                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
+
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
+
+                                }
+
+
+                            }
+                            x++;
+                        }
+                    }, 10000);
+
+                }
+                else
+                {
+                    Toast.makeText(MapsActivity.this, "in start", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         startLocationUpdates();
 
 
     }
 
+
     // Trigger new location updates at interval
     protected void startLocationUpdates() {
 
         getLastLocation();
-        Toast.makeText(getApplicationContext(), "start", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "start", Toast.LENGTH_SHORT).show();
         // Create the location request to start receiving updates
         mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -111,23 +182,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(final Location location) {
         // New location has now been determined
         String msg = "Updated Location: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         // You can now create a LatLng Object for use with maps
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        //mMap.addMarker(new MarkerOptions().position(latLng).title("Your Location"));
-        mMap.addMarker(new MarkerOptions()
-                .position(latLng)
-                .title("This is my title")
-                .snippet("and snippet")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        Toast.makeText(this, latLng.toString(), Toast.LENGTH_SHORT).show();
+        if(a<=0) {
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            //mMap.addMarker(new MarkerOptions().position(latLng).title("Your Location"));
+            mMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title("This is my title")
+                    .snippet("and snippet")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            Toast.makeText(MapsActivity.this, latLng.toString(), Toast.LENGTH_SHORT).show();
+            a++;
+        }
     }
 
     public void getLastLocation() {
@@ -179,6 +253,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Add a marker in Sydney and move the camera
         FusedLocationProviderClient locationClient = getFusedLocationProviderClient(this);
 
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -189,42 +264,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationClient.getLastLocation()
-                .addOnSuccessListener(new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // GPS location can be null if GPS is switched off
-                        if (location != null) {
-                            String s= Double.toString(location.getLatitude());
-                            String s1= Double.toString(location.getLatitude());
-                            key=ref.getKey().toString();
-                            ref.child("Lat").setValue(s);
-                            ref.child("Long").setValue(s1);
-                            ref.child("Place").setValue(key);
+        locationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                String s = Double.toString(location.getLatitude());
+                String s1 = Double.toString(location.getLongitude());
+                Toast.makeText(MapsActivity.this, s + "   " + s1, Toast.LENGTH_SHORT).show();
+                key = ref.getKey().toString();
+                ref.child("Lat").setValue(s);
+                ref.child("Long").setValue(s1);
+                ref.child("Place").setValue(key);
 
-                            //ref.child("Place").setValue(ref.toString());
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d("MapDemoActivity", "Error trying to get last GPS location");
-                        e.printStackTrace();
-                    }
-                });
+            }
+        });
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            mMap.setMyLocationEnabled(true);
-        }
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -232,36 +285,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(final DataSnapshot dataSnapshot) {
-                        i=0;
-                        final Handler handler1=new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                for(DataSnapshot snapshot:dataSnapshot.getChildren())
-                                {
 
-                                    String s=snapshot.child("Lat").getValue().toString();
-                                    String s1=snapshot.child("Long").getValue().toString();
-                                    String s2=snapshot.child("Place").getValue().toString();
+                        for(DataSnapshot snapshot:dataSnapshot.getChildren())
+                        {
+                            if(!(snapshot.getKey().toString().equals(key)))
+                            {
+                            String s=snapshot.child("Lat").getValue().toString();
+                            String s1=snapshot.child("Long").getValue().toString();
+                            String s2=snapshot.child("Place").getValue().toString();
 
-                                    LatLng lng=new LatLng(Double.parseDouble(s),Double.parseDouble(s1));
+                            LatLng lng=new LatLng(Double.parseDouble(s),Double.parseDouble(s1));
 
-                                    // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
-                                    mMap.addMarker(new MarkerOptions()
-                                            .position(lng)
-                                            .title(s2)
-                                            .snippet("and snippet")
-                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                            // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(lng)
+                                    .title(s2)
+                                    .snippet("and snippet")
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ccccc)));
 
 
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney[i]));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
 
-                                    i++;
-                                }
-                                sydney=null;
+
                             }
-                        },5000);
-
+                        }
+                        x++;
 
 
                     }
@@ -271,8 +319,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     }
                 });
+
+
             }
-        },5000);
+        },3000);
+
+
 
 //        sydney[0] = new LatLng(24.5854, 73.7125);
 //        mMap.addMarker(new MarkerOptions().position(sydney[0]).title("Marker in Sydney"));
