@@ -89,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             .position(lng)
                                             .title(s2)
                                             .snippet("and snippet")
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ccccc)));
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
 
 
                                     mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
@@ -301,7 +301,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     .position(lng)
                                     .title(s2)
                                     .snippet("and snippet")
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ccccc)));
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
 
 
                             mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
