@@ -65,7 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         startLocationUpdates();
-
+        Toast.makeText(this, "welcome to map tracking", Toast.LENGTH_SHORT).show();
 
     }
 
