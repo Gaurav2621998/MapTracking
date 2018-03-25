@@ -65,12 +65,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        startLocationUpdates();
 
         mref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(final DataSnapshot dataSnapshot) {
                 Toast.makeText(MapsActivity.this, Integer.toString(x), Toast.LENGTH_SHORT).show();
-                if (x > 0) {
+
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -120,11 +121,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }, 10000);
 
-                }
-                else
-                {
-                    Toast.makeText(MapsActivity.this, "in start", Toast.LENGTH_SHORT).show();
-                }
+
+
 
 
             }
@@ -134,7 +132,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
-        startLocationUpdates();
+
 
 
     }
@@ -278,51 +276,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mref.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(final DataSnapshot dataSnapshot) {
-
-                        for(DataSnapshot snapshot:dataSnapshot.getChildren())
-                        {
-                            if(!(snapshot.getKey().toString().equals(key)))
-                            {
-                            String s=snapshot.child("Lat").getValue().toString();
-                            String s1=snapshot.child("Long").getValue().toString();
-                            String s2=snapshot.child("Place").getValue().toString();
-
-                            LatLng lng=new LatLng(Double.parseDouble(s),Double.parseDouble(s1));
-
-                            // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(lng)
-                                    .title(s2)
-                                    .snippet("and snippet")
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
-
-
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
-
-
-                            }
-                        }
-                        x++;
-
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
-
-            }
-        },3000);
+//        final Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                mref.addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(final DataSnapshot dataSnapshot) {
+//
+//                        for(DataSnapshot snapshot:dataSnapshot.getChildren())
+//                        {
+//                            if(!(snapshot.getKey().toString().equals(key)))
+//                            {
+//                            String s=snapshot.child("Lat").getValue().toString();
+//                            String s1=snapshot.child("Long").getValue().toString();
+//                            String s2=snapshot.child("Place").getValue().toString();
+//
+//                            LatLng lng=new LatLng(Double.parseDouble(s),Double.parseDouble(s1));
+//
+//                            // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
+//                            mMap.addMarker(new MarkerOptions()
+//                                    .position(lng)
+//                                    .title(s2)
+//                                    .snippet("and snippet")
+//                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
+//
+//
+//                            mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
+//
+//
+//                            }
+//                        }
+//                        x++;
+//
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(DatabaseError databaseError) {
+//
+//                    }
+//                });
+//
+//
+//            }
+//        },3000);
 
 
 
