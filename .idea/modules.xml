@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MapTracking.iml" filepath="$PROJECT_DIR$/MapTracking.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MyApplication5.iml" filepath="$PROJECT_DIR$/MyApplication5.iml" />
       <module fileurl="file://E:\@PRACTICE\android\MapTracking\MyApplication5.iml" filepath="E:\@PRACTICE\android\MapTracking\MyApplication5.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://E:\@PRACTICE\android\MapTracking\app\app.iml" filepath="E:\@PRACTICE\android\MapTracking\app\app.iml" />
