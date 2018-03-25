@@ -3,7 +3,6 @@ package com.example.tushar.myapplication;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -27,11 +26,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -40,8 +37,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -49,13 +44,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private LocationRequest mLocationRequest;
     LatLng sydney[] = new LatLng[10];
-
     public int i = 0;
     int x = 0;
-    int a = 0;
+    int a=0;
     String key;
-    PolylineOptions lineOptions = new PolylineOptions();
-    ArrayList<LatLng> points = new ArrayList<LatLng>();
     DatabaseReference mref, ref, dref;
 
 
@@ -74,77 +66,75 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        startLocationUpdates();
-
-
         mref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(final DataSnapshot dataSnapshot) {
                 Toast.makeText(MapsActivity.this, Integer.toString(x), Toast.LENGTH_SHORT).show();
-
+                if (x > 0) {
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             mMap.clear();
-                            final int i=0;
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                if(key.equals(snapshot.getKey().toString())) {
+                                if(!(snapshot.getKey().toString().equals(key))) {
+                                    String s = snapshot.child("Lat").getValue().toString();
+                                    String s1 = snapshot.child("Long").getValue().toString();
+                                    String s2 = snapshot.child("Place").getValue().toString();
 
-                                    final String v = snapshot.child("Lat").getValue().toString();
-                                    Toast.makeText(MapsActivity.this, v, Toast.LENGTH_SHORT).show();
-                                    final String v1 = snapshot.child("Long").getValue().toString();
-                                    Toast.makeText(MapsActivity.this, v1, Toast.LENGTH_SHORT).show();
-                                    String u = snapshot.child("Place").getValue().toString();
-                                    LatLng lng = new LatLng(Double.parseDouble(v), Double.parseDouble(v1));
+                                    LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
 
                                     // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
                                     mMap.addMarker(new MarkerOptions()
                                             .position(lng)
-                                            .title(Integer.toString(i))
+                                            .title(s2)
                                             .snippet("and snippet")
-                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
+
+
                                     mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
-
-
-
-
                                 }
                                 else
                                 {
-                                    final String v = snapshot.child("Lat").getValue().toString();
-                                    final String v1 = snapshot.child("Long").getValue().toString();
-                                    Toast.makeText(MapsActivity.this, v1, Toast.LENGTH_SHORT).show();
-                                    String u = snapshot.child("Place").getValue().toString();
-                                    LatLng lng = new LatLng(Double.parseDouble(v), Double.parseDouble(v1));
+                                    String s = snapshot.child("Lat").getValue().toString();
+                                    String s1 = snapshot.child("Long").getValue().toString();
+                                    String s2 = snapshot.child("Place").getValue().toString();
+
+                                    LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
 
                                     // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
                                     mMap.addMarker(new MarkerOptions()
                                             .position(lng)
-                                            .title(Integer.toString(i))
+                                            .title(s2)
                                             .snippet("and snippet")
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
+                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
+
                                     mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
 
-
-                                }
-
                                 }
 
 
-
-                           //mMap.getUiSettings().setZoomControlsEnabled(true);
-
+                            }
+                            x++;
                         }
-                    }, 20000);
+                    }, 10000);
 
                 }
+                else
+                {
+                    Toast.makeText(MapsActivity.this, "in start", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
         });
+        startLocationUpdates();
 
 
     }
@@ -199,7 +189,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Double.toString(location.getLongitude());
         //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         // You can now create a LatLng Object for use with maps
-        if (a <= 0) {
+        if(a<=0) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             //mMap.addMarker(new MarkerOptions().position(latLng).title("Your Location"));
             mMap.addMarker(new MarkerOptions()
@@ -209,7 +199,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-
             Toast.makeText(MapsActivity.this, latLng.toString(), Toast.LENGTH_SHORT).show();
             a++;
         }
@@ -278,84 +267,67 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                String x = Double.toString(location.getLatitude());
-                String y = Double.toString(location.getLongitude());
-                Toast.makeText(MapsActivity.this, x + "   " + y, Toast.LENGTH_SHORT).show();
+                String s = Double.toString(location.getLatitude());
+                String s1 = Double.toString(location.getLongitude());
+                Toast.makeText(MapsActivity.this, s + "   " + s1, Toast.LENGTH_SHORT).show();
                 key = ref.getKey().toString();
-                ref.child("Lat").setValue(x);
-                ref.child("Long").setValue(y);
+                ref.child("Lat").setValue(s);
+                ref.child("Long").setValue(s1);
                 ref.child("Place").setValue(key);
-                Toast.makeText(MapsActivity.this, key, Toast.LENGTH_SHORT).show();
-
 
             }
         });
 
-//        final Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                mref.addValueEventListener(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(final DataSnapshot dataSnapshot) {
-//                        final Handler handler1=new Handler();
-//                        handler1.postDelayed(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                for(DataSnapshot snapshot:dataSnapshot.getChildren())
-//                                {
-//                                    if(!(snapshot.getKey().toString().equals(key)))
-//                                    {
-//                                        String s=snapshot.child("Lat").getValue().toString();
-//                                        String s1=snapshot.child("Long").getValue().toString();
-//                                        String s2=snapshot.child("Place").getValue().toString();
-//
-//                                        LatLng lng=new LatLng(Double.parseDouble(s),Double.parseDouble(s1));
-//
-//                                        // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
-//                                        mMap.addMarker(new MarkerOptions()
-//                                                .position(lng)
-//                                                .title(s2)
-//                                                .snippet("and snippet")
-//                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
-//
-//                                        points.add(lng);
-//                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
-//
-//
-//
-//                                    }
-//                                }
-////                        lineOptions.addAll(points);
-////                        lineOptions.width(20);
-////                        lineOptions.color(Color.RED);
-//
-//
-//
-//                               x++;
-////                                mMap.addPolyline(lineOptions);
-//
-//
-//                            }
-//                        },3000);
-//
-//
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(DatabaseError databaseError) {
-//
-//                    }
-//                });
-//
-//
-//            }
-//        },20000);
-//
-//
-//
-////        sydney[0] = new LatLng(24.5854, 73.7125);
-////        mMap.addMarker(new MarkerOptions().position(sydney[0]).title("Marker in Sydney"));
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mref.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(final DataSnapshot dataSnapshot) {
+
+                        for(DataSnapshot snapshot:dataSnapshot.getChildren())
+                        {
+                            if(!(snapshot.getKey().toString().equals(key)))
+                            {
+                            String s=snapshot.child("Lat").getValue().toString();
+                            String s1=snapshot.child("Long").getValue().toString();
+                            String s2=snapshot.child("Place").getValue().toString();
+
+                            LatLng lng=new LatLng(Double.parseDouble(s),Double.parseDouble(s1));
+
+                            // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(lng)
+                                    .title(s2)
+                                    .snippet("and snippet")
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
+
+
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
+
+
+                            }
+                        }
+                        x++;
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
+            }
+        },3000);
+
+
+
+//        sydney[0] = new LatLng(24.5854, 73.7125);
+//        mMap.addMarker(new MarkerOptions().position(sydney[0]).title("Marker in Sydney"));
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney[0]));
 //        sydney[1] = new LatLng(34, 34);
 //        mMap.addMarker(new MarkerOptions().position(sydney[1]).title("Marker in fffff"));
@@ -365,7 +337,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onStop() {
         super.onStop();
-        //dref.child(key).removeValue();
+        dref.child(key).removeValue();
     }
 
     @Override
