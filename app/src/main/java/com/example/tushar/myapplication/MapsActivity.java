@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -37,30 +39,46 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.INTERNET;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private LocationRequest mLocationRequest;
+    public UiSettings mUiSettings;
     LatLng sydney[] = new LatLng[10];
     public int i = 0;
+
+    List<Position> p=new ArrayList<>();
+    List<Position> pos=new ArrayList<>();
     int x = 0;
     int a=0;
     String key;
     DatabaseReference mref, ref, dref;
+    int count=1;
 
 
     private long UPDATE_INTERVAL = 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 1000; /* 2 sec */
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
+        open();
         mref = FirebaseDatabase.getInstance().getReference().child("root").child("location");
         dref = mref;
         ref = mref.push();
-        setContentView(R.layout.activity_maps);
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -77,47 +95,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         @Override
                         public void run() {
                             mMap.clear();
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                if(!(snapshot.getKey().toString().equals(key))) {
-                                    String s = snapshot.child("Lat").getValue().toString();
-                                    String s1 = snapshot.child("Long").getValue().toString();
-                                    String s2 = snapshot.child("Place").getValue().toString();
+                            Toast.makeText(MapsActivity.this, Integer.toString(count) + "Count", Toast.LENGTH_SHORT).show();
+                           map();
+                            count++;
 
-                                    LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
-
-                                    // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
-                                    mMap.addMarker(new MarkerOptions()
-                                            .position(lng)
-                                            .title(s2)
-                                            .snippet("and snippet")
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
-
-
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
-                                }
-                                else
-                                {
-                                    String s = snapshot.child("Lat").getValue().toString();
-                                    String s1 = snapshot.child("Long").getValue().toString();
-                                    String s2 = snapshot.child("Place").getValue().toString();
-
-                                    LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
-
-                                    // mMap.addMarker(new MarkerOptions().position(sydney[i]).title(Integer.toString(i)));
-                                    mMap.addMarker(new MarkerOptions()
-                                            .position(lng)
-                                            .title(s2)
-                                            .snippet("and snippet")
-                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-
-
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
-
-                                }
-
-
-                            }
-                            x++;
                         }
                     }, 10000);
 
@@ -135,6 +116,87 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+    }
+    public void map()
+    {
+        mref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot:dataSnapshot.getChildren())
+                {
+                    if(!(key.equals(snapshot.getKey().toString()))) {
+                        String s = snapshot.child("Lat").getValue().toString();
+                        String s1 = snapshot.child("Long").getValue().toString();
+                        String s2 = snapshot.child("Place").getValue().toString();
+//
+                        LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
+//
+                        //mMap.addMarker(new MarkerOptions().position(lng).title(s2));
+                        mMap.addMarker(new MarkerOptions()
+                                .position(lng)
+                                .title(s2)
+                                .snippet("and snippet")
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.mark)));
+                        Toast.makeText(MapsActivity.this, lng.toString()+"in Last", Toast.LENGTH_SHORT).show();
+
+
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
+                    }
+                    else{
+                        String s = snapshot.child("Lat").getValue().toString();
+                        String s1 = snapshot.child("Long").getValue().toString();
+                        String s2 = snapshot.child("Place").getValue().toString();
+//
+                        LatLng lng = new LatLng(Double.parseDouble(s), Double.parseDouble(s1));
+//
+                        //mMap.addMarker(new MarkerOptions().position(lng).title(s2));
+                        mMap.addMarker(new MarkerOptions()
+                                .position(lng)
+                                .title(s2)
+                                .snippet("and snippet")
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                        Toast.makeText(MapsActivity.this, lng.toString()+"in Last", Toast.LENGTH_SHORT).show();
+
+
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(lng));
+
+                    }
+//
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+
+    public void open()
+    {
+        if(checkPermission())
+        {
+        }
+        else
+        {
+            requestPermission();
+        }
+    }
+    public Boolean checkPermission()
+    {
+        int result = ContextCompat.checkSelfPermission(getApplicationContext(),INTERNET);
+        int result1 = ContextCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION);
+
+
+        return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED ;
+    }
+
+    public  void requestPermission()
+    {
+        int requestCode;
+        ActivityCompat.requestPermissions(this,new String[]{INTERNET,ACCESS_FINE_LOCATION},requestCode=1);
     }
 
 
@@ -197,7 +259,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            Toast.makeText(MapsActivity.this, latLng.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(MapsActivity.this, latLng.toString()+Integer.toString(a), Toast.LENGTH_SHORT).show();
             a++;
         }
     }
@@ -248,6 +310,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         Toast.makeText(this, "hello", Toast.LENGTH_SHORT).show();
         mMap = googleMap;
+        mUiSettings=mMap.getUiSettings();
         // Add a marker in Sydney and move the camera
         FusedLocationProviderClient locationClient = getFusedLocationProviderClient(this);
 
@@ -267,7 +330,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onSuccess(Location location) {
                 String s = Double.toString(location.getLatitude());
                 String s1 = Double.toString(location.getLongitude());
-                Toast.makeText(MapsActivity.this, s + "   " + s1, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapsActivity.this, s + "   " + s1 + "mapready", Toast.LENGTH_SHORT).show();
                 key = ref.getKey().toString();
                 ref.child("Lat").setValue(s);
                 ref.child("Long").setValue(s1);
@@ -275,7 +338,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
-
+        mUiSettings.setZoomControlsEnabled(true);
 //        final Handler handler = new Handler();
 //        handler.postDelayed(new Runnable() {
 //            @Override
